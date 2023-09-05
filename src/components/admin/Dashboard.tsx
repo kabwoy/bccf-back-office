@@ -106,20 +106,24 @@ export default function Sidebar() {
           </ListItem>
           <AccordionBody className="py-1">
             <List className="p-0">
+            <Link to={'/events/new'}>
               <ListItem>
                 <ListItemPrefix>
                   <ChevronRightIcon strokeWidth={3} className="h-3 w-5" />
                 </ListItemPrefix>
-                <Link to={'/events/new'}> Add Event</Link>
+                 Add Event
                
               </ListItem>
+              </Link>
+              <Link to={"/events"}>
               <ListItem>
                 <ListItemPrefix>
                   <ChevronRightIcon strokeWidth={3} className="h-3 w-5" />
                 </ListItemPrefix>
-                <Link to={'/events'}> List Event</Link>
-             
+                 List Event
+    
               </ListItem>
+              </Link>
             </List>
           </AccordionBody>
         </Accordion>

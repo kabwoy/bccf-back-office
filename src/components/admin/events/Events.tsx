@@ -1,6 +1,13 @@
-import { Alert, Card, Typography } from "@material-tailwind/react";
-import { useEffect, useState } from "react";
+import { Alert, Card, Typography , Button, IconButton } from "@material-tailwind/react/";
+import { useContext, useEffect, useReducer, useState } from "react";
 import { supabase } from "../../../supabase/init";
+import { ArrowLeftIcon, TrashIcon } from "@heroicons/react/24/outline";
+import { Backdrop, CircularProgress } from "@mui/material";
+import { EditCalendar } from "@mui/icons-material";
+import SimplePagination from "../SimplePagination";
+import PageNumberContext from "../../../context/pageNumberContext";
+import { pageNumberReducer } from "../../../reducers/pageNumberReducer";
+import { ArrowRightIcon } from "@heroicons/react/24/solid";
 
 interface Events{
   id:number
@@ -13,13 +20,53 @@ interface Events{
 
 export default function Events() {
   const [events , setEvents] = useState<Events[]>([])
-  useEffect(()=>{
-    supabase.from('events').select()
-    .then((response)=>{
-      setEvents([...response.data as Events[]])
+  const [eventCount , setEventCount] = useState(0);
+  const [isLoading , setIsLoading] = useState(false);
+  const [active, setActive] = useState(1);
+  const [value , dispatch] = useReducer(pageNumberReducer , 1);
+
+  useEffect(function getEventLength(){
+    supabase.from('events').select().then((response)=>{
+      setEventCount(response.data!.length);
     })
+  },[])
+  const next = () => {
+    if (value === Math.ceil(eventCount/3)) return;
+    
+    dispatch({type:'ADD'})
+    fetchEvents(value)
+
+  };
+ 
+  const prev = () => {
+    if (value === 1) return;
+    dispatch({type:'SUBTRACT'})
+    fetchEvents(value)
+  };
+  useEffect(()=>{
+   
+    // const {from, to} = getPagination()
+    fetchEvents(value)
   } , [])
+  function fetchEvents(page:number){
+    setIsLoading(true)
+    supabase.from('events').select().range(page*3-3,page*3).order('id')
+    .then((response)=>{
+      console.log(response.data)
+      setEvents([...response.data as Events[]])
+      setIsLoading(false)
+    })
+  }
   return (
+    
+    <>
+    
+    {isLoading &&  <Backdrop
+      sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
+      open={isLoading}
+    >  
+      <CircularProgress color="inherit" />
+    </Backdrop> }
     <Card className="h-full mt-2  w-full p-4 overflow-scroll">
       <div className="flex justify-center">
       <Alert className="w-[50%]  mb-2" color="green">
@@ -103,16 +150,49 @@ export default function Events() {
                 {event.location}
                 </Typography>
               </td>
-              <td className="p-4">
-                <Typography as="a" href="#" variant="small" color="blue-gray" className="font-medium">
-                  Edit
-                </Typography>
+              <td className="p-4 flex gap-4">
+                <Button className="flex items-center" color="blue">
+                  <EditCalendar className="h-5 w-5"/>
+                  Edit Event
+                  </Button>
+                <Button className="flex items-center" size="sm" color="red">
+                  <TrashIcon className="h-4 w-4 font-bold"/>
+                  Delete
+                  </Button>
               </td>
             </tr>)}
-            
-        
+         
         </tbody>
+        
       </table>
+     
+      <div className="flex justify-center mt-4">
+      <div className="flex items-center gap-8">
+      <IconButton
+        size="sm"
+        variant="outlined"
+        onClick={prev}
+        disabled={value === 1}
+      >
+        <ArrowLeftIcon strokeWidth={2} className="h-4 w-4" />
+      </IconButton>
+      <Typography color="gray" className="font-normal">
+        Page <strong className="text-gray-900">{value}</strong> of{" "}
+        <strong className="text-gray-900">{Math.ceil(eventCount/3)}</strong>
+      </Typography>
+      <IconButton
+        size="sm"
+        variant="outlined"
+        onClick={next}
+        disabled={value === eventCount}
+      >
+        <ArrowRightIcon strokeWidth={2} className="h-4 w-4" />
+      </IconButton>
+    </div>
+              {/* <SimplePagination itemCount={eventCount} active={active} /> */}
+          </div>
     </Card>
+    
+    </>
   );
 }
