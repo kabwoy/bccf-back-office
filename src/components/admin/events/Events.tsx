@@ -57,6 +57,19 @@ export default function Events() {
     })
   }
 
+  async function deleteEvent(id:number){
+    try{
+      console.log(id)
+      const {data , error} = await supabase.from('events').delete().eq('id' , id);
+      if(error){
+        console.log(error)
+        return
+      }
+      location.reload()
+    }catch(e){
+      console.log(e)
+    }
+  }
   async function takeInput(value:string){
     try{
       setIsLoading(true)
@@ -175,7 +188,7 @@ export default function Events() {
                   <EditCalendar className="h-5 w-5"/>
                   Edit Event
                   </Button>
-                <Button className="flex items-center" size="sm" color="red">
+                <Button onClick={()=>deleteEvent(event.id)} className="flex items-center" size="sm" color="red">
                   <TrashIcon className="h-4 w-4 font-bold"/>
                   Delete
                   </Button>

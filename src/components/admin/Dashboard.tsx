@@ -10,6 +10,7 @@ import {
   Accordion,
   AccordionHeader,
   AccordionBody,
+  Avatar,
 } from "@material-tailwind/react";
 import {
   UserCircleIcon,
@@ -18,21 +19,27 @@ import {
   CalendarIcon,
   UserPlusIcon,
   HomeIcon,
-  UserGroupIcon
+  UserGroupIcon,
+  MegaphoneIcon
 } from "@heroicons/react/24/solid";
 import { ChevronRightIcon, ChevronDownIcon } from "@heroicons/react/24/outline";
 import { Link, Outlet } from "react-router-dom";
 import { supabase } from "../../supabase/init";
+import logo from '../../assets/logo.jpeg'
+import useAuthStore from "./store";
+import MyNavbar from "../Navbar";
+import NavbarWithSearch from "../Navbar";
 
 export default function Sidebar() {
   const [open, setOpen] = useState(0);
+  const {user , getUser} = useAuthStore()
   const handleOpen = (value:any) => {
     setOpen(open === value ? 0 : value);
   };
   const [memberaCount , setMembersCount] = useState<number>(0)
   async function fetchMembers(){
     try{
-      const {count , data} = await supabase.from("members").select();
+      const {data} = await supabase.from("members").select();
       if(!data){
         return setMembersCount(0);
       }
@@ -42,14 +49,17 @@ export default function Sidebar() {
     }
   }
   useEffect(()=>{
-    fetchMembers()
+    fetchMembers(),
+    getUser()
   })
   return (
     <>
-    <div className="flex gap-4">
+    <div className="flex  gap-4">
+    
     <Card className="h-[100vh] w-full max-w-[20rem] p-4 shadow-xl shadow-blue-gray-900/5">
       <div className="mb-2 p-4">
-        <Typography variant="h5" color="blue-gray">
+        <Typography className="flex items-center gap-2 " variant="h5" color="blue-gray">
+          <img src={logo} width={40} height={30}  className="rounded-xl cover" alt="logo" />
           BCCF
         </Typography>
       </div>
@@ -149,6 +159,48 @@ export default function Sidebar() {
             </List>
           </AccordionBody>
         </Accordion>
+
+        <Accordion
+          open={open === 4}
+          icon={
+            <ChevronDownIcon
+              strokeWidth={2.5}
+              className={`mx-auto h-4 w-4 transition-transform ${open === 4 ? "rotate-180" : ""}`}
+            />
+          }
+        >
+          <ListItem className="p-0" selected={open === 4}>
+            <AccordionHeader onClick={() => handleOpen(4)} className="border-b-0 p-3">
+              <ListItemPrefix>
+                <MegaphoneIcon className="h-5 w-5"  />
+              </ListItemPrefix>
+              <Typography color="blue-gray" className="mr-auto font-normal">
+               Announcements
+              </Typography>
+            </AccordionHeader>
+          </ListItem>
+          <AccordionBody className="py-1">
+            <List className="p-0">
+              <Link to={'/announcements/new'}>
+              <ListItem>
+                <ListItemPrefix>
+                  <ChevronRightIcon strokeWidth={3} className="h-3 w-5" />
+                </ListItemPrefix>
+                Add Anouncements
+              </ListItem>
+              </Link>
+              <Link to={'/announcements'}>
+              <ListItem>
+                <ListItemPrefix>
+                  <ChevronRightIcon strokeWidth={3} className="h-3 w-5" />
+                </ListItemPrefix>
+                List Anouncements
+              </ListItem>
+              </Link>
+              
+            </List>
+          </AccordionBody>
+        </Accordion>
         <ListItem>
           <ListItemPrefix>
             <UserGroupIcon className="h-5 w-5" />
@@ -158,12 +210,14 @@ export default function Sidebar() {
             <Chip value={memberaCount} size="sm" variant="ghost" color="blue-gray" className="rounded-full" />
           </ListItemSuffix>
         </ListItem>
+        <Link to={'/user/profile'}>
         <ListItem>
           <ListItemPrefix>
             <UserCircleIcon className="h-5 w-5" />
           </ListItemPrefix>
           Profile
         </ListItem>
+        </Link>
         <ListItem>
           <ListItemPrefix>
             <Cog6ToothIcon className="h-5 w-5" />
@@ -175,6 +229,13 @@ export default function Sidebar() {
             <PowerIcon className="h-5 w-5" />
           </ListItemPrefix>
           Log Out
+        </ListItem>
+       
+        <ListItem className="flex items-center">
+          <ListItemPrefix>
+          <Avatar src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQOApFCSVByzhZorHUAP-J851JAYyOPtI1jdg&usqp=CAU"/>
+          </ListItemPrefix>
+           Welcome {user.email} 👋
         </ListItem>
       </List>
     </Card>
