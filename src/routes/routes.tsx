@@ -6,11 +6,16 @@ import AddEvent from '../components/admin/events/AddEvent.js'
 import Announcements from '../components/admin/announcements/Index.js'
 import AddAnnouncements from '../components/admin/announcements/New.js'
 import Profile from '../components/admin/auth/Profile.tsx'
+import Home from '../components/admin/Home.tsx'
 const router = createBrowserRouter([
     {
         path:"/",
         element:<Dashboard/>,
         children:[
+            {
+                path:"home",
+                element:<Home/>
+            },
             {
                 path:"events",
                 element:<Events/>

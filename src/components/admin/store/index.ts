@@ -8,16 +8,17 @@ interface IUserType{
 }
 
 interface User{
-    user:IUserType
+    user:IUserType | null
     getUser : () => Promise<void>
 }
 
 const useAuthStore = create<User>(set => ({
-    user:{id:'' , email: '',},
+    user:{id:'' , email:''},
     async getUser() {
         try{
             const {data , error} = await supabase.auth.getUser()
             if(error){
+                set({user:null})
                 return console.log(error.message)
             }
             set({user:{email:data.user.email , id:data.user.id}})

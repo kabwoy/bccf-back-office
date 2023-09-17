@@ -17,6 +17,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { supabase } from "../supabase/init";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 function Copyright(props: any) {
   return (
     <Typography
@@ -40,6 +41,7 @@ const defaultTheme = createTheme();
 export default function SignIn() {
   const [isLoading , setIsLoading ] = useState(false)
   const [errorMessage , setErrorMeassage] = useState("")
+  const navigate = useNavigate()
   const authSchema = z.object({
     email: z.string().email().nonempty(),
     password: z.string().nonempty({ message: "password is required" }).min(6),
@@ -62,9 +64,10 @@ export default function SignIn() {
       if (error) {
         return setErrorMeassage(error.message)
       }
+      return navigate("/home")
     } catch (e) {
       
-      // console.log(e)
+      console.log(e)
     }
   }
   return (

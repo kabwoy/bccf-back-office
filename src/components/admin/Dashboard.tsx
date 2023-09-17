@@ -23,16 +23,16 @@ import {
   MegaphoneIcon
 } from "@heroicons/react/24/solid";
 import { ChevronRightIcon, ChevronDownIcon } from "@heroicons/react/24/outline";
-import { Link, Outlet } from "react-router-dom";
+import { Link, Navigate, Outlet, useNavigate } from "react-router-dom";
 import { supabase } from "../../supabase/init";
 import logo from '../../assets/logo.jpeg'
 import useAuthStore from "./store";
-import MyNavbar from "../Navbar";
-import NavbarWithSearch from "../Navbar";
 
 export default function Sidebar() {
   const [open, setOpen] = useState(0);
   const {user , getUser} = useAuthStore()
+  const navigate = useNavigate()
+  
   const handleOpen = (value:any) => {
     setOpen(open === value ? 0 : value);
   };
@@ -48,10 +48,24 @@ export default function Sidebar() {
       console.log(e)
     }
   }
+
+  async function logOut(){
+    try{
+      const {error} = await supabase.auth.signOut()
+      if(error) return console.log(error)
+      navigate("/auth/login")
+    }catch(e){
+      console.log(e)
+    }
+  }
   useEffect(()=>{
     fetchMembers(),
     getUser()
   })
+
+  if(!user){
+    return <Navigate to={'/auth/login'}/>
+  }
   return (
     <>
     <div className="flex  gap-4">
@@ -68,6 +82,7 @@ export default function Sidebar() {
           open={open === 1}
           
         >
+          <Link to={'/home'}>
           <ListItem className="p-0" selected={open === 1}>
             <AccordionHeader onClick={() => handleOpen(1)} className="border-b-0 p-3">
               <ListItemPrefix>
@@ -78,7 +93,7 @@ export default function Sidebar() {
               </Typography>
             </AccordionHeader>
           </ListItem>
-        
+          </Link>
         </Accordion>
         <Accordion
           open={open === 2}
@@ -224,7 +239,7 @@ export default function Sidebar() {
           </ListItemPrefix>
           Settings
         </ListItem>
-        <ListItem>
+        <ListItem onClick={logOut}>
           <ListItemPrefix>
             <PowerIcon className="h-5 w-5" />
           </ListItemPrefix>
@@ -235,7 +250,7 @@ export default function Sidebar() {
           <ListItemPrefix>
           <Avatar src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQOApFCSVByzhZorHUAP-J851JAYyOPtI1jdg&usqp=CAU"/>
           </ListItemPrefix>
-           Welcome {user.email} 👋
+           Welcome {user?.email} 👋
         </ListItem>
       </List>
     </Card>
